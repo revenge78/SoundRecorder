@@ -60,4 +60,9 @@
   <!-- Errors -->
   <string name="error_no_permission_granted_record">Неможливо запустити запис звуку без вашого дозволу.</string>
   <string name="error_no_permission_granted_for_playback">Не можу відтворити збережену запис без вашого дозволу.</string>
+  <string name="error_mkdir">Помилка! Зовнішній накопичувач (SD карта) не доступний для збереження запису.</string>
+  <string name="error_mic_is_busy">Помилка! Не можу розпочати запис, бо інша програма використовує мікрофон. Перезавантажте пристрій, якщо ця проблема виникне знову.</string>
+  <string name="error_unknown">Невідома помилка =(</string>
+  <string name="error_rename_file">Не вдалося перейменувати файл.</string>
+  <string name="error_prepare_playback">Помилка! На жаль, не вдалося відтворити цей звук.</string>
 </resources>
