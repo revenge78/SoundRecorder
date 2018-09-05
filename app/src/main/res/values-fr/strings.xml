@@ -12,6 +12,7 @@
   <string name="toast_recording_start">Enregistrement démarré</string>
   <string name="toast_recording_finish">Enregistrement enregistré dans</string>
   <string name="toast_recording_paused">L\'enregistrement a été mis en pause</string>
+  <string name="toast_recording_resumed">Enregistrement sonore commencé</string>
   <string name="toast_file_delete">%1$s a été effacé</string>
   <string name="toast_file_delete_failed">Échec de supprimer le fichier %1$s</string>
   <string name="toast_file_rename_failed">Le changement de nom de %1$s a échoué</string>
@@ -58,4 +59,5 @@
   <!-- Errors -->
   <string name="error_unknown">Erreur inconnue =(</string>
   <string name="error_rename_file">Échec lors du renommage du fichier.</string>
+  <string name="error_prepare_playback">Erreur! Cet audio ne peut pas être lu.</string>
 </resources>
