@@ -59,4 +59,5 @@
   <string name="notification_channel_description">Пастаяннае апавяшчэнне</string>
   <!-- Errors -->
   <string name="error_no_permission_granted_record">Не магу пачаць запіс без вашага дазволу.</string>
+  <string name="error_no_permission_granted_for_playback">Не магу прайграць захаваны запіс без вашага дазволу.</string>
 </resources>
