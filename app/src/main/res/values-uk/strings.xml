@@ -13,8 +13,33 @@
   <string name="toast_recording_finish">Запис збережено до</string>
   <string name="toast_recording_paused">Запис призупинено</string>
   <string name="toast_recording_resumed">Запис відновлено</string>
+  <string name="toast_file_delete">%1$s успішно видалено</string>
+  <string name="toast_file_delete_failed">Не вдалося видалити %1$s</string>
+  <string name="toast_file_rename_failed">Не вдалося перейменувати %1$s</string>
+  <string name="toast_file_exists">Файл %1$s вже існує. Будь ласка, оберіть інше ім\'я файлу.</string>
   <!-- Notifications -->
+  <string name="notification_recording">Йде запис…</string>
   <!-- Dialogs -->
+  <string name="dialog_title_delete">Підтвердіть видалення…</string>
+  <string name="dialog_text_delete">Ви впевнені, що ви хотіли б видалити цей запис? \n\nЦе постійно і не може бути скасоване.</string>
+  <string name="dialog_title_licenses">Ліцензії з відкритим вихідним кодом</string>
+  <string name="dialog_title_share">Поділитися файлом</string>
+  <string name="dialog_title_rename">Перейменувати файл</string>
+  <string name="dialog_title_options">Опції</string>
+  <string name="dialog_file_share">Поділитися</string>
+  <string name="dialog_file_rename">Перейменувати</string>
+  <string name="dialog_file_delete">Видалити</string>
+  <string name="dialog_action_cancel">Відміна</string>
+  <string name="dialog_action_ok">OK</string>
+  <string name="dialog_action_yes">Так</string>
+  <string name="dialog_action_yes_delete">Так, видалити</string>
+  <string name="dialog_action_no">Ні</string>
+  <string name="no_saved_recordings_message">Немає збережених записів</string>
+  <string name="pause_recording_button">Пауза</string>
+  <string name="resume_recording_button">Продовжити</string>
+  <string name="default_file_name">Мій запис</string>
+  <string name="record_prompt">Натисніть кнопку, щоб почати запис</string>
+  <string name="record_in_progress">Йде запис</string>
   <!-- Preferences -->
   <!-- Notification -->
   <!-- Errors -->
