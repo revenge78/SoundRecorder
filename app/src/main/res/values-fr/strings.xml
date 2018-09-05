@@ -3,12 +3,15 @@
 <resources>
   <!-- About -->
   <!-- Toolbar -->
+  <string name="app_name">Dictaphone</string>
+  <string name="action_licenses">Licences</string>
   <string name="action_settings">Paramètres</string>
   <string name="tab_title_record">Enregistrer</string>
   <string name="tab_title_saved_recordings">Enregistrements</string>
   <!-- Toasts -->
   <string name="toast_recording_start">Enregistrement démarré</string>
   <string name="toast_recording_finish">Enregistrement enregistré dans</string>
+  <string name="toast_recording_paused">L\'enregistrement a été mis en pause</string>
   <string name="toast_file_delete">%1$s a été effacé</string>
   <string name="toast_file_exists">Le fichier %1$s existe déjà. Veuillez choisir un nom de fichier différent.</string>
   <!-- Notifications -->
