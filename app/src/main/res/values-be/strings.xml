@@ -21,6 +21,7 @@
   <string name="notification_recording">Ідзе запіс…</string>
   <!-- Dialogs -->
   <string name="dialog_title_delete">Пацвердзіць выдаленне…</string>
+  <string name="dialog_text_delete">Вы ўпэўненыя, што жадаеце выдаліць гэты запіс? \n\nЗадумайцеся аб наступствах.</string>
   <!-- Preferences -->
   <!-- Notification -->
   <!-- Errors -->
