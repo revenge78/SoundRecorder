@@ -49,6 +49,14 @@
   <string name="pref_licenses_desc">Išsami atvirojo šaltinio programinės įrangos licencijos informacija</string>
   <string name="pref_section_about">Apie</string>
   <string name="pref_appversion_title">Programėlės versija</string>
+  <string name="image_description_microphone_icon">Mikrofono piktograma</string>
   <!-- Notification -->
+  <string name="action_stop">Stabdyti</string>
+  <string name="notification_title">Įrašymas vyksta</string>
+  <string name="notification_content">Bakstelėkite mane</string>
+  <string name="notification_channel_recorder">Įrašymas vyksta</string>
+  <string name="notification_channel_description">Nuolatinis pranešimų</string>
   <!-- Errors -->
+  <string name="error_unknown">Nežinoma klaida =(</string>
+  <string name="error_rename_file">Nepavyko pervardyti failą.</string>
 </resources>
