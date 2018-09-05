@@ -60,4 +60,9 @@
   <!-- Errors -->
   <string name="error_no_permission_granted_record">Не магу пачаць запіс без вашага дазволу.</string>
   <string name="error_no_permission_granted_for_playback">Не магу прайграць захаваны запіс без вашага дазволу.</string>
+  <string name="error_mkdir">Памылка! Знешні назапашвальнік (SD карта) не даступны для захавання запісу.</string>
+  <string name="error_mic_is_busy">Памылка! Не магу пачаць запіс, так как іншае прыкладанне выкарыстоўвае мікрафон. Перазагрузіце прыладу, калі гэтая праблема паўстане зноў.</string>
+  <string name="error_unknown">Невядомая памылка =(</string>
+  <string name="error_rename_file">Не атрымалася перайменаваць файл.</string>
+  <string name="error_prepare_playback">Памылка! Прабачце, не магу прайграць гэты запіс.</string>
 </resources>
