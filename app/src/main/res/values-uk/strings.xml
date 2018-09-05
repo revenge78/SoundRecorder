@@ -3,7 +3,16 @@
 <resources>
   <!-- About -->
   <!-- Toolbar -->
+  <string name="app_name">Звукозаписувач</string>
+  <string name="action_licenses">Ліцензії</string>
+  <string name="action_settings">Налаштування</string>
+  <string name="tab_title_record">Запис</string>
+  <string name="tab_title_saved_recordings">Збережені записи</string>
   <!-- Toasts -->
+  <string name="toast_recording_start">Запис розпочато</string>
+  <string name="toast_recording_finish">Запис збережено до</string>
+  <string name="toast_recording_paused">Запис призупинено</string>
+  <string name="toast_recording_resumed">Запис відновлено</string>
   <!-- Notifications -->
   <!-- Dialogs -->
   <!-- Preferences -->
