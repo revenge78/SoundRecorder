@@ -2,6 +2,7 @@
 <resources>
 
     <!-- Toolbar -->
+    <string name="app_name">Sound Recorder</string>
     <string name="action_licenses">Licencias</string>
     <string name="action_settings">Ajustes</string>
     <string name="tab_title_record">Grabar</string>
