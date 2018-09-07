@@ -1,10 +1,36 @@
 # Easy Sound Recorder 2
+[![API](https://img.shields.io/badge/API-16%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=16) [![Build Status](https://travis-ci.com/naXa777/SoundRecorder.svg?branch=master&style=flat)](https://travis-ci.com/naXa777/SoundRecorder) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/1b4c1e2546784537b6bef070769c34bb)](https://www.codacy.com/app/naXa777/SoundRecorder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=naXa777/SoundRecorder&amp;utm_campaign=Badge_Grade)
 
-A simple sound recording Android app implementing <a href="https://material.io/">Material Design</a>.
+![Icon](/app/src/main/res/drawable-hdpi/ic_launcher.png) [![Android app on Google Play](https://developer.android.com/images/brand/en_app_rgb_wo_60.png)](https://play.google.com/store/apps/details?id=by.naxa.soundrecorder)
 
-![Icon](https://github.com/naXa777/SoundRecorder/blob/master/app/src/main/res/drawable-hdpi/ic_launcher.png)
+## Contributing
 
-[![Android app on Google Play](https://developer.android.com/images/brand/en_app_rgb_wo_60.png)](https://play.google.com/store/apps/details?id=by.naxa.soundrecorder) [![Android app on F-Droid](https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Get_it_on_F-Droid.svg/200px-Get_it_on_F-Droid.svg.png)](https://f-droid.org/repository/browse/?fdid=by.naxa.soundrecorder)
+Contributors are more than welcome. How can you contribute?
+
+### Report bugs
+
+We want our app to be as stable as possible thus your bug reports are immensely valuable. File [GitHub Issues](https://github.com/naXa777/SoundRecorder/issues) for anything that is unexpectedly broken.
+
+* App version
+* Device model
+* Android version
+* Steps to reproduce the bug
+* Expected behavior
+* Actual behavior (a screenshot and/or log file may be helpful)
+
+### Contribute Code [![Open Source Helpers](https://www.codetriage.com/naxa777/soundrecorder/badges/users.svg)](https://www.codetriage.com/naxa777/soundrecorder)
+
+We have labeled tasks you can help with as [help wanted](https://github.com/naXa777/SoundRecorder/labels/help%20wanted) and [good first issue](https://github.com/naXa777/SoundRecorder/labels/good%20first%20issue). Just pick up an issue that you're interested in and start coding. If you have a great idea you really want to implement, start by logging an issue for us. We'll let you know if it fits with our product direction and then you can start development. When you're ready open a Pull Request with a description of your changes.
+
+### Commit Messages
+
+See Chris Beams' guide to writing good commit messages - [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/).
+
+### Translate
+
+You can translate SoundRecorder at [POEditor](https://poeditor.com/join/project/IuPsne4VcJ). Add a translation in your own language or improve other translations.
+
+[![POEditor](https://poeditor.com/public/images/logo_small.png)](https://poeditor.com/join/project/IuPsne4VcJ)
 
 ## Screenshots
 
@@ -12,6 +38,21 @@ A simple sound recording Android app implementing <a href="https://material.io/"
 ![Imgur](https://i.imgur.com/p9Pn9Qgl.png) ![Imgur](https://i.imgur.com/LthDOjHl.png)
 ![Imgur](https://i.imgur.com/KCODDi8l.png) ![Imgur](https://i.imgur.com/rxeQUDIl.png)
 ![Imgur](https://i.imgur.com/U6w7dnXl.png) ![Imgur](https://i.imgur.com/ZGRnroNl.png)
+
+## Building
+
+If you want to run the app locally, do the following:
+
+1. Download or clone the repository
+2. If you don't have a Fabric account -> Sign up at fabric.io
+3. Declare environment variables of which the name starts with `ORG_GRADLE_PROJECT_` followed by the property name (include your own Fabric `apiKey` and `apiSecret`).
+     `export ORG_GRADLE_PROJECT_soundrecorderCrashlyticsApiSecret=0cf7c9df6d057e7bb62b1427ab364e8115a75fcf7430873b6274bb094d1a8adb`   
+     `export ORG_GRADLE_PROJECT_soundrecorderCrashlyticsApiKey=cc238b2a4866c96030`
+   Then `fabric.properties` file will be created automatically by Gradle on the first build. Do not commit this file to a version control, keep it secret.
+4. Import the project in your IDE (we use Gradle + Android Studio to build)
+5. You should now be able to build and run the app.
+
+See [Crashlytics Kit Setup Demo](https://github.com/plastiv/CrashlyticsDemo) if you need more help.
 
 ## Dev environment
 
