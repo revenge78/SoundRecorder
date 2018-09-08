@@ -41,6 +41,7 @@
   <string name="record_prompt">Натисніть кнопку, щоб почати запис</string>
   <string name="record_in_progress">Йде запис</string>
   <string name="record_paused">Призупинено</string>
+  <string name="wait">Зачекайте</string>
   <string name="send_to">Надіслати до</string>
   <!-- Preferences -->
   <string name="pref_high_quality_title">Увімкнути високу якість запису</string>
