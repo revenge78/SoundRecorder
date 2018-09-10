@@ -41,6 +41,7 @@ import by.naxa.soundrecorder.util.MyIntentBuilder;
 import by.naxa.soundrecorder.util.Paths;
 import by.naxa.soundrecorder.util.PermissionsHelper;
 import by.naxa.soundrecorder.util.ScreenLock;
+import io.fabric.sdk.android.Fabric;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -387,7 +388,7 @@ public class RecordFragment extends Fragment {
         try {
             LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(mMessageReceiver);
         } catch (Exception exc) {
-            Crashlytics.logException(exc);
+            if (Fabric.isInitialized()) Crashlytics.logException(exc);
             Log.e(LOG_TAG, "Error unregistering MessageReceiver", exc);
         }
     }

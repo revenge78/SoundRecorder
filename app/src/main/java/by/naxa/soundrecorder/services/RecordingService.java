@@ -237,7 +237,7 @@ public class RecordingService extends Service {
             filesPaused.add(mFilePath);
         } catch (IllegalStateException exc) {
             changeStateTo(RecorderState.RECORDING);
-            Crashlytics.logException(exc);
+            if (Fabric.isInitialized()) Crashlytics.logException(exc);
             Log.e(LOG_TAG, "stop() failed", exc);
         }
     }
@@ -268,7 +268,7 @@ public class RecordingService extends Service {
             // RuntimeException is thrown when stop() is called immediately after start().
             // In this case the output file is not properly constructed ans should be deleted.
             Log.e(LOG_TAG, "RuntimeException: stop() is called immediately after start()", exc);
-            Crashlytics.logException(exc);
+            if (Fabric.isInitialized()) Crashlytics.logException(exc);
             // TODO delete temporary output file
         } finally {
             mRecorder = null;
@@ -305,22 +305,21 @@ public class RecordingService extends Service {
                 List<Track> movieTracks = movie.getTracks();
                 tracks.addAll(movieTracks);
             } catch (IOException e) {
-                if (Fabric.isInitialized()) Crashlytics.logException(e);
-                e.printStackTrace();
+                logException(e);
                 return false;
             } catch (NullPointerException exc) {
-                Crashlytics.logException(exc);
-                Log.wtf(LOG_TAG, "Caught NPE from MovieCreator#build()");
+                wtf(exc, "Caught NPE from MovieCreator#build()");
             }
         }
 
-        if (tracks.size() > 0) {
-            try {
-                finalMovie.addTrack(new AppendTrack(tracks.toArray(new Track[0])));
-            } catch (IOException e) {
-                if (Fabric.isInitialized()) Crashlytics.logException(e);
-                e.printStackTrace();
-            }
+        if (tracks.size() == 0) {
+            return false;
+        }
+        try {
+            finalMovie.addTrack(new AppendTrack(tracks.toArray(new Track[0])));
+        } catch (IOException e) {
+            logException(e);
+            return false;
         }
 
         final Container mp4file;
@@ -329,12 +328,10 @@ public class RecordingService extends Service {
             mp4file = new DefaultMp4Builder().build(finalMovie);
             fc = new FileOutputStream(new File(mFilePath)).getChannel();
         } catch (NoSuchElementException exc) {
-            Crashlytics.logException(exc);
-            Log.wtf(LOG_TAG, "Caught NoSuchElementException from DefaultMp4Builder#build()", exc);
+            wtf(exc, "Caught NoSuchElementException from DefaultMp4Builder#build()");
             return false;
         } catch (FileNotFoundException e) {
-            if (Fabric.isInitialized()) Crashlytics.logException(e);
-            e.printStackTrace();
+            logException(e);
             return false;
         }
 
@@ -342,15 +339,13 @@ public class RecordingService extends Service {
         try {
             mp4file.writeContainer(fc);
         } catch (IOException e) {
-            if (Fabric.isInitialized()) Crashlytics.logException(e);
-            e.printStackTrace();
+            logException(e);
             ok = false;
         } finally {
             try {
                 fc.close();
             } catch (IOException exc) {
-                Crashlytics.logException(exc);
-                exc.printStackTrace();
+                logException(exc);
                 ok = false;
             }
         }
@@ -389,8 +384,18 @@ public class RecordingService extends Service {
         if (state == RecorderState.PREPARING && newState == RecorderState.PREPARING)
             throw new IllegalStateException();
         state = newState;
-        if (Fabric.isDebuggable())
+        if (Fabric.isInitialized())
             Crashlytics.setString("recorder_state", state.toString());
+    }
+
+    private void wtf(Exception exc, String msg) {
+        if (Fabric.isInitialized()) Crashlytics.logException(exc);
+        Log.wtf(LOG_TAG, msg, exc);
+    }
+
+    private void logException(Exception e) {
+        if (Fabric.isInitialized()) Crashlytics.logException(e);
+        e.printStackTrace();
     }
 
     /**

@@ -6,8 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.ColorFilter;
-import android.graphics.LightingColorFilter;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -55,11 +53,13 @@ public class PlaybackFragment extends AppCompatDialogFragment {
 
     private static final String LOG_TAG = "PlaybackFragment";
     private static final String ARG_ITEM = "recording_item";
+    private static final String ARG_IS_PLAYING = "is_playing";
+    private static final String ARG_SEEKBAR_POSITION = "seekbar_position";
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 3;
 
     private RecordingItem item;
 
-    private Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
     private HeadsetListener mHeadsetListener;
 
     private MediaPlayer mMediaPlayer = null;
@@ -74,6 +74,7 @@ public class PlaybackFragment extends AppCompatDialogFragment {
 
     // Stores the length of the file in milliseconds
     private long itemDurationMs = 0;
+    private int currentPosition = 0;
 
     /**
      * Whether this PlaybackFragment has focus from {@link AudioManager} to play audio
@@ -118,20 +119,18 @@ public class PlaybackFragment extends AppCompatDialogFragment {
         item = args.getParcelable(ARG_ITEM);
         if (item == null)
             return;
+        //isPlaying = args.getBoolean(ARG_IS_PLAYING, false);
+        currentPosition = args.getInt(ARG_SEEKBAR_POSITION, 0);
 
         itemDurationMs = item.getLength();
         if (Fabric.isInitialized()) {
             Crashlytics.setLong("recording_item_duration", itemDurationMs);
+            Crashlytics.setLong("starting_position", currentPosition);
             Crashlytics.setString("recording_item_name", item.getName());
             Crashlytics.setString("recording_item_file_path", item.getFilePath());
             Crashlytics.setBool("is_playing", isPlaying);
             Crashlytics.setBool("holding_audio_focus", mFocused);
         }
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
     }
 
     @NonNull
@@ -148,12 +147,6 @@ public class PlaybackFragment extends AppCompatDialogFragment {
         mCurrentProgressTextView = view.findViewById(R.id.current_progress_text_view);
 
         mSeekBar = view.findViewById(R.id.seekbar);
-        ColorFilter filter = new LightingColorFilter
-                (getResources().getColor(R.color.primary), getResources().getColor(R.color.primary));
-        mSeekBar.getProgressDrawable().setColorFilter(filter);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            mSeekBar.getThumb().setColorFilter(filter);
-        }
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -205,6 +198,15 @@ public class PlaybackFragment extends AppCompatDialogFragment {
 
         fileNameTextView.setText(item.getName());
         mFileLengthTextView.setText(TimeUtils.formatDuration(itemDurationMs));
+
+        if (currentPosition > 0) {
+            //prepareMediaPlayerFromPoint(currentPosition);
+            mSeekBar.setProgress(currentPosition);
+        }
+        /*
+        if (isPlaying) {
+            tapStartButton();
+        }*/
 
         builder.setView(view);
 
@@ -268,18 +270,20 @@ public class PlaybackFragment extends AppCompatDialogFragment {
     public void onPause() {
         super.onPause();
 
+        /*
         if (mMediaPlayer != null) {
             stopPlaying();
-        }
+        }*/
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
+        /*
         if (mMediaPlayer != null) {
             stopPlaying();
-        }
+        }*/
     }
 
     /**
@@ -354,12 +358,9 @@ public class PlaybackFragment extends AppCompatDialogFragment {
 
     private void startPlaying() {
         mPlayButton.setImageResource(R.drawable.ic_media_pause);
-        mMediaPlayer = new MediaPlayer();
 
         try {
-            mMediaPlayer.setDataSource(item.getFilePath());
-            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mMediaPlayer.prepare();
+            mMediaPlayer = createMediaPlayer(item.getFilePath());
             mSeekBar.setMax(mMediaPlayer.getDuration());
             requestAudioFocus();
 
@@ -369,40 +370,49 @@ public class PlaybackFragment extends AppCompatDialogFragment {
                     mMediaPlayer.start();
                 }
             });
+
+            mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    stopPlaying();
+                }
+            });
+
+            ScreenLock.keepScreenOn(getActivity());
         } catch (IOException e) {
             if (Fabric.isInitialized()) Crashlytics.logException(e);
             Log.e(LOG_TAG, "prepare() failed");
             EventBroadcaster.send(getContext(), R.string.error_prepare_playback);
         }
 
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                stopPlaying();
-            }
-        });
-
         updateSeekBar();
-        ScreenLock.keepScreenOn(getActivity());
     }
 
+    private static MediaPlayer createMediaPlayer(String dataSource) throws IOException {
+        final MediaPlayer mp = new MediaPlayer();
+
+        mp.setDataSource(dataSource);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            final AudioAttributes attributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
+                    .build();
+            mp.setAudioAttributes(attributes);
+        } else {
+            mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        }
+        mp.prepare();
+
+        return mp;
+    }
+
+    /**
+     * Set MediaPlayer to start from middle of the audio file
+     * @param progress
+     */
     private void prepareMediaPlayerFromPoint(int progress) {
-        //set mediaPlayer to start from middle of the audio file
-
-        mMediaPlayer = new MediaPlayer();
-
         try {
-            mMediaPlayer.setDataSource(item.getFilePath());
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                final AudioAttributes attributes = new AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
-                        .build();
-                mMediaPlayer.setAudioAttributes(attributes);
-            } else {
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            }
-            mMediaPlayer.prepare();
+            mMediaPlayer = createMediaPlayer(item.getFilePath());
             mSeekBar.setMax(mMediaPlayer.getDuration());
             mMediaPlayer.seekTo(progress);
             requestAudioFocus();
@@ -414,12 +424,11 @@ public class PlaybackFragment extends AppCompatDialogFragment {
                 }
             });
 
+            ScreenLock.keepScreenOn(getActivity());
         } catch (IOException e) {
             if (Fabric.isInitialized()) Crashlytics.logException(e);
             Log.e(LOG_TAG, "prepare() failed");
         }
-
-        ScreenLock.keepScreenOn(getActivity());
     }
 
     /**
@@ -583,7 +592,7 @@ public class PlaybackFragment extends AppCompatDialogFragment {
         @Override
         public void run() {
             if (mMediaPlayer != null) {
-                int currentPosition = mMediaPlayer.getCurrentPosition();
+                currentPosition = mMediaPlayer.getCurrentPosition();
                 mSeekBar.setProgress(currentPosition);
                 mCurrentProgressTextView.setText(TimeUtils.formatDuration(currentPosition));
                 updateSeekBar();
@@ -619,6 +628,8 @@ public class PlaybackFragment extends AppCompatDialogFragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(ARG_ITEM, item);
+        //outState.putBoolean(ARG_IS_PLAYING, isPlaying);
+        outState.putInt(ARG_SEEKBAR_POSITION, currentPosition);
     }
 
 }

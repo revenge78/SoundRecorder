@@ -28,6 +28,7 @@ import by.naxa.soundrecorder.R;
 import by.naxa.soundrecorder.fragments.FileViewerFragment;
 import by.naxa.soundrecorder.fragments.RecordFragment;
 import by.naxa.soundrecorder.util.EventBroadcaster;
+import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -132,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         } catch (Exception exc) {
-            Crashlytics.logException(exc);
+            if (Fabric.isInitialized()) Crashlytics.logException(exc);
             Log.e(LOG_TAG, "Error unregistering MessageReceiver", exc);
         }
     }

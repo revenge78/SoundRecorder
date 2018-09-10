@@ -1,5 +1,6 @@
 package by.naxa.soundrecorder.adapters;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,10 +14,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
@@ -25,15 +29,12 @@ import java.util.ArrayList;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import by.naxa.soundrecorder.BuildConfig;
 import by.naxa.soundrecorder.DBHelper;
 import by.naxa.soundrecorder.R;
 import by.naxa.soundrecorder.RecordingItem;
-import by.naxa.soundrecorder.fragments.PlaybackFragment;
 import by.naxa.soundrecorder.listeners.OnDatabaseChangedListener;
 import by.naxa.soundrecorder.listeners.OnSingleClickListener;
 import by.naxa.soundrecorder.util.EventBroadcaster;
@@ -78,23 +79,30 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
                 )
         );
 
-        // define an on click listener to open PlaybackFragment
+        // define an on click listener to expand card
         holder.cardView.setOnClickListener(new OnSingleClickListener() {
             @Override
-            public void onSingleClick(View view) {
-                try {
-                    PlaybackFragment playbackFragment =
-                            new PlaybackFragment().newInstance(getItem(holder.getPosition()));
-
-                    FragmentTransaction transaction = ((FragmentActivity) mContext)
-                            .getSupportFragmentManager()
-                            .beginTransaction();
-
-                    playbackFragment.show(transaction, "dialog_playback");
-                } catch (Exception e) {
-                    Log.e(LOG_TAG, "exception", e);
-                    Crashlytics.logException(e);
+            public void onSingleClick(View v) {
+                if (holder.isPopupVisible) {
+                    holder.isPopupVisible = false;
+                    holder.mSeekBar.setVisibility(View.GONE);
+                    holder.mCurrentProgressTextView.setVisibility(View.GONE);
+                    holder.mFileLengthTextView.setVisibility(View.GONE);
+                    holder.mPlayButton.hide();
+                } else {
+                    holder.isPopupVisible = true;
+                    holder.mSeekBar.setVisibility(View.VISIBLE);
+                    holder.mCurrentProgressTextView.setVisibility(View.VISIBLE);
+                    holder.mFileLengthTextView.setVisibility(View.VISIBLE);
+                    holder.mPlayButton.show();
                 }
+
+                // rotate Expand icon
+                final ObjectAnimator anim = ObjectAnimator.ofFloat(
+                        holder.imageViewExpand, "rotation", holder.rotationAngle, holder.rotationAngle + 180);
+                anim.setDuration(500);
+                anim.start();
+                holder.rotationAngle = (holder.rotationAngle + 180) % 360;
             }
         });
 
@@ -154,10 +162,18 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
     }
 
     static class RecordingsViewHolder extends RecyclerView.ViewHolder {
-        TextView vName;
-        TextView vLength;
-        TextView vDateAdded;
-        View cardView;
+        final TextView vName;
+        final TextView vLength;
+        final TextView vDateAdded;
+        final View cardView;
+        final ImageView imageViewExpand;
+        final SeekBar mSeekBar;
+        final FloatingActionButton mPlayButton;
+        final TextView mCurrentProgressTextView;
+        final TextView mFileLengthTextView;
+
+        boolean isPopupVisible = false;
+        int rotationAngle = 0;
 
         RecordingsViewHolder(View v) {
             super(v);
@@ -165,6 +181,11 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
             vLength = v.findViewById(R.id.file_length_text);
             vDateAdded = v.findViewById(R.id.file_date_added_text);
             cardView = v.findViewById(R.id.card_view);
+            imageViewExpand = v.findViewById(R.id.expand);
+            mSeekBar = v.findViewById(R.id.seekbar);
+            mPlayButton = v.findViewById(R.id.fab_play);
+            mFileLengthTextView = v.findViewById(R.id.file_length_text_view);
+            mCurrentProgressTextView = v.findViewById(R.id.current_progress_text_view);
         }
     }
 
