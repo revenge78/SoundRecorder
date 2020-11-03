@@ -1,7 +1,11 @@
 package by.naxa.soundrecorder.services;
 
+import android.app.AlertDialog;
 import android.app.Service;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Binder;
 import android.os.Environment;
@@ -28,17 +32,28 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import by.naxa.soundrecorder.DBHelper;
 import by.naxa.soundrecorder.R;
 import by.naxa.soundrecorder.RecorderState;
+import by.naxa.soundrecorder.activities.MainActivity;
+import by.naxa.soundrecorder.fragments.RecordFragment;
+import by.naxa.soundrecorder.fragments.SettingsFragment;
 import by.naxa.soundrecorder.util.Command;
 import by.naxa.soundrecorder.util.EventBroadcaster;
 import by.naxa.soundrecorder.util.MyIntentBuilder;
 import by.naxa.soundrecorder.util.MySharedPreferences;
 import by.naxa.soundrecorder.util.NotificationCompatPie;
 import by.naxa.soundrecorder.util.Paths;
+import cafe.adriel.androidaudioconverter.AndroidAudioConverter;
+import cafe.adriel.androidaudioconverter.callback.IConvertCallback;
+import cafe.adriel.androidaudioconverter.model.AudioFormat;
 import io.fabric.sdk.android.Fabric;
+import it.sauronsoftware.jave.AudioAttributes;
+import it.sauronsoftware.jave.Encoder;
+import it.sauronsoftware.jave.EncoderException;
+import it.sauronsoftware.jave.EncodingAttributes;
 
 /**
  * Created by Daniel on 12/28/2014.
@@ -46,9 +61,11 @@ import io.fabric.sdk.android.Fabric;
 public class RecordingService extends Service {
 
     private static final String LOG_TAG = "RecordingService";
+    cafe.adriel.androidaudioconverter.model.AudioFormat a;
 
     private String mFileName = null;
     private String mFilePath = null;
+
 
     private MediaRecorder mRecorder = null;
 
@@ -56,6 +73,7 @@ public class RecordingService extends Service {
 
     private long mStartingTimeMillis = 0;
     private long mElapsedMillis = 0;
+
 
     private volatile RecorderState state = RecorderState.STOPPED;
     private int tempFileCount = 0;
@@ -65,6 +83,10 @@ public class RecordingService extends Service {
 
     // Binder given to clients
     private final IBinder mBinder = new LocalBinder();
+
+    public RecordingService() {
+
+    }
 
 
     @Override
@@ -134,30 +156,38 @@ public class RecordingService extends Service {
         }
     }
 
-    public void stopService() {
+    public void stopService() throws EncoderException, IOException {
         Log.d(LOG_TAG, "RecordingService#stopService()");
         stopRecording();
         stopForeground(true);
         stopSelf();
     }
 
+
     @Override
     public void onDestroy() {
         if (mRecorder != null) {
-            stopRecording();
+            try {
+                stopRecording();
+            } catch (EncoderException | IOException e) {
+                e.printStackTrace();
+            }
         }
 
         super.onDestroy();
     }
 
     public void setFileNameAndPath(boolean isFilePathTemp) {
+
         if (isFilePathTemp) {
-            mFileName = getString(R.string.default_file_name) + (++tempFileCount) + "_" + ".tmp";
+            mFileName = getString(R.string.default_file_name) + (++tempFileCount) + "_" + SettingsFragment.getFormat();
             Paths.createDirectory(getExternalCacheDir(), Paths.SOUND_RECORDER_FOLDER);
             mFilePath = Paths.combine(
                     getExternalCacheDir(),
                     Paths.SOUND_RECORDER_FOLDER, mFileName);
         } else {
+
+
             int count = 0;
             File f;
 
@@ -165,7 +195,7 @@ public class RecordingService extends Service {
                 ++count;
 
                 mFileName =
-                        getString(R.string.default_file_name) + "_" + (mDatabase.getCount() + count) + ".mp4";
+                        getString(R.string.default_file_name) + "_" + (mDatabase.getCount() + count) + SettingsFragment.getFormat();
 
                 mFilePath = Paths.combine(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
@@ -180,20 +210,30 @@ public class RecordingService extends Service {
      * Start or resume sound recording.
      */
     public void startRecording() {
+
         if (state == RecorderState.RECORDING || state == RecorderState.PREPARING)
             return;
         changeStateTo(RecorderState.PREPARING);
 
         boolean isTemporary = true;
         setFileNameAndPath(isTemporary);
-
         // Configure the MediaRecorder for a new recording
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+
+        if(SettingsFragment.getFormat().equals(".amr")){
+
+            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        }
+        else {
+
+            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        }
         mRecorder.setOutputFile(mFilePath);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         mRecorder.setAudioChannels(1);
+
         if (MySharedPreferences.getPrefHighQuality(this)) {
             mRecorder.setAudioSamplingRate(44100);
             mRecorder.setAudioEncodingBitRate(192000);
@@ -244,7 +284,37 @@ public class RecordingService extends Service {
         }
     }
 
-    public void stopRecording() {
+    public void convertAudio() {
+
+        String saa = Paths.combine(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+                Paths.SOUND_RECORDER_FOLDER, "My Recording_1.mp4");
+
+        File source = new File(mFilePath);
+
+        IConvertCallback callback = new IConvertCallback() {
+            @Override
+            public void onSuccess(File convertedFile) {
+                Toast.makeText(getApplicationContext(), "SUCCESS: " + convertedFile.getPath(), Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFailure(Exception error) {
+                Toast.makeText(getApplicationContext(), "ERROR: " + error.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        };
+
+        Toast.makeText(getApplicationContext(), "Converting...", Toast.LENGTH_SHORT).show();
+        AndroidAudioConverter.with(getApplicationContext())
+                .setFile(source)
+                .setFormat(AudioFormat.MP3)
+                .setCallback(callback)
+                .convert();
+    }
+
+
+    public void stopRecording() throws EncoderException, IOException {
+
         if (state == RecorderState.STOPPED) {
             Log.wtf(LOG_TAG, "stopRecording: already STOPPED.");
             return;
@@ -257,7 +327,10 @@ public class RecordingService extends Service {
             filesPaused.add(mFilePath);
 
         boolean isTemporary = false;
+
+
         setFileNameAndPath(isTemporary);
+
         String pathToSend = "";
         try {
             if (stateBefore != RecorderState.PAUSED) {
@@ -287,11 +360,18 @@ public class RecordingService extends Service {
             }
         }
 
+
         try {
             mDatabase.addRecording(mFileName, mFilePath, mElapsedMillis);
         } catch (Exception e) {
             if (Fabric.isInitialized()) Crashlytics.logException(e);
             Log.e(LOG_TAG, "exception", e);
+        }
+
+
+        if (SettingsFragment.getFormat().equals(".mp3")) {
+            convertAudio();
+
         }
     }
 
