@@ -1,11 +1,7 @@
 package by.naxa.soundrecorder.services;
 
-import android.app.AlertDialog;
 import android.app.Service;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Binder;
 import android.os.Environment;
@@ -32,13 +28,10 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import by.naxa.soundrecorder.DBHelper;
 import by.naxa.soundrecorder.R;
 import by.naxa.soundrecorder.RecorderState;
-import by.naxa.soundrecorder.activities.MainActivity;
-import by.naxa.soundrecorder.fragments.RecordFragment;
 import by.naxa.soundrecorder.fragments.SettingsFragment;
 import by.naxa.soundrecorder.util.Command;
 import by.naxa.soundrecorder.util.EventBroadcaster;
@@ -50,10 +43,6 @@ import cafe.adriel.androidaudioconverter.AndroidAudioConverter;
 import cafe.adriel.androidaudioconverter.callback.IConvertCallback;
 import cafe.adriel.androidaudioconverter.model.AudioFormat;
 import io.fabric.sdk.android.Fabric;
-import it.sauronsoftware.jave.AudioAttributes;
-import it.sauronsoftware.jave.Encoder;
-import it.sauronsoftware.jave.EncoderException;
-import it.sauronsoftware.jave.EncodingAttributes;
 
 /**
  * Created by Daniel on 12/28/2014.
@@ -156,7 +145,7 @@ public class RecordingService extends Service {
         }
     }
 
-    public void stopService() throws EncoderException, IOException {
+    public void stopService() {
         Log.d(LOG_TAG, "RecordingService#stopService()");
         stopRecording();
         stopForeground(true);
@@ -167,12 +156,11 @@ public class RecordingService extends Service {
     @Override
     public void onDestroy() {
         if (mRecorder != null) {
-            try {
-                stopRecording();
-            } catch (EncoderException | IOException e) {
-                e.printStackTrace();
-            }
+
+            stopRecording();
+
         }
+
 
         super.onDestroy();
     }
@@ -221,12 +209,11 @@ public class RecordingService extends Service {
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 
-        if(SettingsFragment.getFormat().equals(".amr")){
+        if (SettingsFragment.getFormat().equals(".amr")) {
 
             mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
             mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        }
-        else {
+        } else {
 
             mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
@@ -313,7 +300,7 @@ public class RecordingService extends Service {
     }
 
 
-    public void stopRecording() throws EncoderException, IOException {
+    public void stopRecording() {
 
         if (state == RecorderState.STOPPED) {
             Log.wtf(LOG_TAG, "stopRecording: already STOPPED.");
