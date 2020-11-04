@@ -273,10 +273,6 @@ public class RecordingService extends Service {
 
     public void convertAudio() {
 
-        String saa = Paths.combine(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-                Paths.SOUND_RECORDER_FOLDER, "My Recording_1.mp4");
-
         File source = new File(mFilePath);
 
         IConvertCallback callback = new IConvertCallback() {

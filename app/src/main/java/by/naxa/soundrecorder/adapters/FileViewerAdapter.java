@@ -31,6 +31,8 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.w3c.dom.Text;
+
 import by.naxa.soundrecorder.BuildConfig;
 import by.naxa.soundrecorder.DBHelper;
 import by.naxa.soundrecorder.R;
@@ -240,6 +242,7 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
      * rename a file
      */
     public void rename(int position, String name) {
+
         final String mFilePath = Paths.combine(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
                 Paths.SOUND_RECORDER_FOLDER, name);
@@ -283,6 +286,8 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View view = inflater.inflate(R.layout.dialog_rename_file, null);
+        TextView text = (TextView)view.findViewById(R.id.textView);
+        text.setText(SettingsFragment.getFormat());
 
        // TextView textView = (TextView) view.findViewById(R.id.textView);
      //   textView.setText(SettingsFragment.getFormat());
