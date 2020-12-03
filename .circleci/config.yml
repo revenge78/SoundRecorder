@@ -1,34 +1,117 @@
-version: 2
+ersion: 2.1
+description: |
+    Orb for working with Android projects on CircleCI. Source: https://github.com/circleci-public/android-orb
+display:
+    source_url: https://github.com/circleci-public/android-orb
+commands:
+    accept-licenses:
+        description: |
+            Accept all Android SDK Manager licenses
+        steps:
+            - run:
+                command: |
+                    yes | sdkmanager --licenses
+                    yes | sdkmanager --update
+                description: |
+                    Accepts all Android SDK licenses. This command is typically not necessary to execute, since the CircleCI convenience images ship with all licenses accepted. This command will add approximately 10 seconds to the build time.
+                name: Accept Android Licenses
+                shell: /bin/bash -e
+    install-ndk:
+        description: |
+            Extend CircleCI's Android convenience images by installing a version of the Android NDK of your choice.
+        parameters:
+            ndk-sha:
+                default: fd94d0be6017c6acbd193eb95e09cf4b6f61b834
+                description: |
+                    SHA-1 of the zip file specified by ndk-version. Provide a string formatted along the lines of the default value. See https://developer.android.com/ndk/downloads
+                type: string
+            ndk-version:
+                default: android-ndk-r19c
+                description: |
+                    Version of the NDK to install. Provide a string formatted along the lines of the default value.
+                type: string
+        steps:
+            - run:
+                command: |
+                    [ -w /usr/local/bin ] && SUDO="" || SUDO=sudo
+
+                    $SUDO curl --http1.1 --silent --show-error --location --fail --retry 3 \
+                      --output /tmp/<<parameters.ndk-version>>.zip \
+                      https://dl.google.com/android/repository/<<parameters.ndk-version>>-linux-x86_64.zip
+
+                    $SUDO echo "<<parameters.ndk-sha>> /tmp/<<parameters.ndk-version>>.zip" > /tmp/<<parameters.ndk-version>>.zip.sha1
+
+                    sha1sum -c /tmp/<<parameters.ndk-version>>.zip.sha1
+
+                    $SUDO unzip -q /tmp/<<parameters.ndk-version>>.zip -d /opt/android
+                    $SUDO rm -f /tmp/<<parameters.ndk-version>>*
+
+                    $SUDO chown -R circleci:circleci /opt/android/<<parameters.ndk-version>>
+
+                    echo "export ANDROID_NDK_HOME=/opt/android/<<parameters.ndk-version>>" >> $BASH_ENV
+
+                    if [[ -d /opt/android/<<parameters.ndk-version>> && \
+                      -n "$(ls -A /opt/android/<<parameters.ndk-version>>)" ]]; then
+                      echo "Android NDK installed"
+                    else
+                      echo "Android NDK did not install successfully"
+                      exit 1
+                    fi
+                name: Install Android NDK
+    restore-build-cache:
+        description: |
+            Restore the build cache. See `save_build_cache` for more information.
+        steps:
+            - restore_cache:
+                key: android-orb-v1-
+    save-build-cache:
+        description: |
+            Save the Android build-cache. The build cache stores certain outputs that the Android plugin for Gradle generates when building your project (such as unpackaged AARs and pre-dexed remote dependencies). Your clean builds are much faster while using the cache because the build system can simply reuse those cached files during subsequent builds, instead of recreating them. The build cache also works on continuous integration servers and when running multiple build processes on a single local machine.
+            See https://developer.android.com/studio/build/build-cache
+        steps:
+            - save_cache:
+                key: android-orb-v1-{{ epoch }}
+                paths:
+                    - ~/.android/build-cache
+                    - ~/.android/cache
+executors:
+    android:
+        description: |
+            Select a CircleCI convenience image to get building on Android.
+            See https://hub.docker.com/r/circleci/android/tags for a full list of
+            the available images.
+        docker:
+            - image: circleci/android:api-<<parameters.sdk-version>><<#parameters.variant>>-<<parameters.variant>><</parameters.variant>>
+        parameters:
+            sdk-version:
+                default: "29"
+                description: |
+                    The API level to use. For Android Oreo 8.1.0, use API level "27", for example. See https://source.android.com/setup/start/build-numbers for a full list.
+                enum:
+                    - "23"
+                    - "24"
+                    - "25"
+                    - "26"
+                    - "27"
+                    - "28"
+                    - "29"
+                type: enum
+            variant:
+                default: ""
+                description: |
+                    Choose an optional Android image variant, either node or ndk: https://hub.docker.com/r/circleci/android/tags
+                enum:
+                    - ""
+                    - node
+                    - ndk
+                type: enum
 jobs:
-  build:
-    working_directory: ~/code
-    docker:
-      - image: circleci/android:api-25-alpha
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
-    environment:
-      JVM_OPTS: -Xmx3200m
-    steps:
-      - checkout
-      - restore_cache:
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
-#      - run:
-#         name: Chmod permissions #if permission for Gradlew Dependencies fail, use this.
-#         command: sudo chmod +x ./gradlew
-      - run:
-          name: Download Dependencies
-          command: ./gradlew androidDependencies
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
-      - run:
-          name: Run Tests
-          command: ./gradlew build
-      - store_artifacts: # for display in Artifacts: https://circleci.com/docs/2.0/artifacts/ 
-          path: app/build/reports
-          destination: reports
-      - store_test_results: # for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
-          path: app/build/test-results
-      # See https://circleci.com/docs/2.0/deployment-integrations/ for deploy examples
+    build:
+        description: |
+            Start building an Android project on CircleCI
+        executor:
+            name: android
+            sdk-version: "23"
+        steps:
+            - checkout
+            - accept-licenses
